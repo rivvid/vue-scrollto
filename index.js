@@ -59,12 +59,14 @@ exports.install = function(Vue) {
     });
 };
 
-exports.scrollTo = function(element, duration, options) {
+exports.scrollTo = function(elementToScroll, element, duration, options) {
+    if (typeof elementToScroll === "string") {
+        elementToScroll = _.$(element);
+    }
     if (typeof element === "string") {
         element = _.$(element);
     }
 
-    var page = _.$("html, body");
     var events = [
         "scroll",
         "mousedown",
@@ -80,12 +82,12 @@ exports.scrollTo = function(element, duration, options) {
         abort = true;
     };
 
-    _.on(page, events, abortFn);
+    _.on(elementToScroll, events, abortFn);
 
-    var initialY = window.pageYOffset;
+    var initialY = elementToScroll.pageYOffset;
     var elementY = initialY + element.getBoundingClientRect().top;
-    var targetY = document.body.scrollHeight - elementY < window.innerHeight
-        ? document.body.scrollHeight - window.innerHeight
+    var targetY = elementToScroll.scrollHeight - elementY < elementToScroll.innerHeight
+        ? elementToScroll.scrollHeight - elementToScroll.innerHeight
         : elementY;
 
     if (options.offset) {
@@ -97,7 +99,7 @@ exports.scrollTo = function(element, duration, options) {
     var start;
 
     var done = function() {
-        _.off(page, events, abortFn);
+        _.off(elementToScroll, events, abortFn);
         if (abort && options.onCancel) options.onCancel();
         if (!abort && options.onDone) options.onDone();
     };
@@ -112,7 +114,7 @@ exports.scrollTo = function(element, duration, options) {
         var progress = Math.min(time / duration, 1);
         progress = easing(progress);
 
-        window.scrollTo(0, initialY + diff * progress);
+        elementToScroll.scrollTo(0, initialY + diff * progress);
 
         if (time < duration) {
             window.requestAnimationFrame(step);
